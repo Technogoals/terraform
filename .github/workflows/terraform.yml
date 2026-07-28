@@ -1,0 +1,104 @@
+name: Deploy Azure VM with Terraform
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Terraform operation
+        required: true
+        default: plan
+        type: choice
+        options:
+          - plan
+          - apply
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.15.6
+
+      - name: Initialize providers without backend
+        run: terraform init -backend=false
+
+      - name: Check formatting
+        run: terraform fmt -check -recursive
+
+      - name: Validate configuration
+        run: terraform validate
+
+  deploy:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment: azure-production
+    concurrency:
+      group: terraform-azure-vm
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      TF_IN_AUTOMATION: "true"
+      TF_VAR_subscription_id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      TF_VAR_location: ${{ vars.AZURE_LOCATION }}
+      TF_VAR_allowed_ssh_cidr: ${{ vars.ALLOWED_SSH_CIDR }}
+      TF_VAR_ssh_public_key_path: ./deployment_key.pub
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Sign in to Azure using OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.15.6
+
+      - name: Write SSH public key
+        env:
+          SSH_PUBLIC_KEY: ${{ vars.SSH_PUBLIC_KEY }}
+        run: printf '%s\n' "$SSH_PUBLIC_KEY" > deployment_key.pub
+
+      - name: Initialize Azure Storage backend
+        run: >-
+          terraform init
+          -backend-config="resource_group_name=SaiTarunRG"
+          -backend-config="storage_account_name=saitarunterrsformstate"
+          -backend-config="container_name=tfstate"
+          -backend-config="key=azure-vm/terraform.tfstate"
+          -backend-config="use_azuread_auth=true"
+
+      - name: Check formatting
+        run: terraform fmt -check -recursive
+
+      - name: Validate configuration
+        run: terraform validate
+
+      - name: Create saved plan
+        run: terraform plan -input=false -lock-timeout=5m -out=tfplan
+
+      - name: Apply saved plan
+        if: inputs.operation == 'apply'
+        run: terraform apply -input=false -lock-timeout=5m -auto-approve tfplan
