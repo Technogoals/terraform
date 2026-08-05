@@ -82,7 +82,7 @@ jobs:
         run: >-
           terraform init
           -backend-config="resource_group_name=SaiTarunRG"
-          -backend-config="storage_account_name=saitarunterrsformstate"
+          -backend-config="storage_account_name=saitaruntfcde0b09e"
           -backend-config="container_name=tfstate"
           -backend-config="key=azure-vm/terraform.tfstate"
           -backend-config="use_azuread_auth=true"
