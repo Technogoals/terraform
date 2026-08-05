@@ -1,3 +1,3 @@
-subscription_id = "7e4da688-de41-4101-b05c-efd2a6a4c440"
+subscription_id = "cde0b09e-60fb-40de-85fa-f9af8b6dd549"
 vm_size         = "Standard_B2ats_v2"
 location        = "italynorth"
