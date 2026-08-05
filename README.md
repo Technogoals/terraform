@@ -13,11 +13,11 @@ for the VM NIC and limited future platform use.
 
 The subscription policy allows deployments in Italy North, Poland Central,
 Spain Central, Sweden Central, and Switzerland North. The configuration uses
-`swedencentral` with a `Standard_B1s` learning VM (one vCPU and 1 GiB RAM).
-The subscription has 10 approved BS-family cores there, while its Basv2 quota
-is zero. Sweden Central also has the lowest regular Linux B1s consumption rate
-among the approved regions at the time of configuration. B1s is used instead
-of the cheaper B1ls because Azure reported a live B1ls capacity restriction.
+`swedencentral` with a `Standard_D2als_v6` learning VM (two vCPUs and 4 GiB
+RAM). The subscription-specific Compute SKU API reports this SKU as
+unrestricted, and its Dalsv6 family has a 10-vCPU quota. All smaller legacy B
+sizes are unavailable for this subscription in the approved regions, despite
+the nominal BS-family quota.
 The existing resource group's metadata location remains `uksouth`; Azure permits
 resources inside a resource group to use a different region.
 
