@@ -73,9 +73,11 @@ workflow against an empty remote state while the Azure resources already exist.
 
 ## GitHub Actions deployment
 
-The workflow uses GitHub OIDC and Azure workload identity federation, so no
-client secret is stored in GitHub. Create an Entra application or user-assigned
-managed identity with a federated credential using:
+The workflow passes GitHub's OIDC identity directly to Terraform and the Azure
+Storage backend. Azure workload identity federation exchanges that short-lived
+identity for Azure access, so neither an Azure CLI session nor a client secret
+is needed in CI. Create an Entra application or user-assigned managed identity
+with a federated credential using:
 
 ```text
 Issuer:   https://token.actions.githubusercontent.com
@@ -97,9 +99,11 @@ required reviewers, and add these environment variables:
 - `TFSTATE_CONTAINER`
 
 The identity needs deployment permissions plus `Storage Blob Data Contributor`
-on the state container. Run the workflow manually with `plan`, review it, then
-run it again with `apply`. The `azure-production` environment approval protects
-both operations, and Terraform's state lock prevents concurrent deployments.
+on the state container. Terraform receives `ARM_USE_OIDC=true` and uses the
+GitHub-provided token endpoint to request a short-lived token for this identity.
+Run the workflow manually with `plan`, review it, then run it again with
+`apply`. The `azure-production` environment approval protects both operations,
+and Terraform's state lock prevents concurrent deployments.
 
 ## Remove the VM resources
 
