@@ -86,16 +86,10 @@ Subject:  repo:<owner>/<repository>:environment:azure-production
 ```
 
 Create a protected GitHub environment named `azure-production` and configure
-required reviewers. The non-secret Azure client, tenant, and subscription IDs
-are set directly in the workflow. Add these environment variables for the
-deployment inputs:
-
-- `AZURE_LOCATION` (currently `italynorth`)
-- `ALLOWED_SSH_CIDR` (your public IP with `/32`)
-- `SSH_PUBLIC_KEY` (the contents of the `.pub` file only)
-- `TFSTATE_RESOURCE_GROUP`
-- `TFSTATE_STORAGE_ACCOUNT`
-- `TFSTATE_CONTAINER`
+required reviewers. The non-secret Azure identifiers, deployment location,
+allowed SSH CIDR, SSH public key, and state-backend names are set directly in
+the workflow. If your public IP or SSH key changes, update the corresponding
+workflow environment value before deploying.
 
 The identity needs deployment permissions plus `Storage Blob Data Contributor`
 on the state container. Terraform receives `ARM_USE_OIDC=true` and uses the

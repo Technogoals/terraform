@@ -58,10 +58,11 @@ jobs:
       ARM_SUBSCRIPTION_ID: cde0b09e-60fb-40de-85fa-f9af8b6dd549
       ARM_USE_AZUREAD: "true"
       ARM_USE_OIDC: "true"
+      SSH_PUBLIC_KEY: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMLcczJqh4bKeUgWKwxXCRr8LlWbT/RqVj1a4s1fFrx0 siva@Sivas-MacBook-Pro.local
       TF_IN_AUTOMATION: "true"
       TF_VAR_subscription_id: cde0b09e-60fb-40de-85fa-f9af8b6dd549
-      TF_VAR_location: ${{ vars.AZURE_LOCATION }}
-      TF_VAR_allowed_ssh_cidr: ${{ vars.ALLOWED_SSH_CIDR }}
+      TF_VAR_location: italynorth
+      TF_VAR_allowed_ssh_cidr: 2.121.53.164/32
       TF_VAR_ssh_public_key_path: ./deployment_key.pub
 
     steps:
@@ -74,8 +75,6 @@ jobs:
           terraform_version: 1.15.6
 
       - name: Write SSH public key
-        env:
-          SSH_PUBLIC_KEY: ${{ vars.SSH_PUBLIC_KEY }}
         run: printf '%s\n' "$SSH_PUBLIC_KEY" > deployment_key.pub
 
       - name: Initialize Azure Storage backend
