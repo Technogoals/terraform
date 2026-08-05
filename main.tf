@@ -11,10 +11,14 @@ resource "azurerm_virtual_network" "this" {
 }
 
 resource "azurerm_subnet" "this" {
-  name                 = "${var.vm_name}-subnet"
+  name                 = "${var.vm_name}-subnet-${var.location}"
   resource_group_name  = data.azurerm_resource_group.this.name
   virtual_network_name = azurerm_virtual_network.this.name
   address_prefixes     = ["10.73.42.0/29"]
+
+  lifecycle {
+    replace_triggered_by = [azurerm_virtual_network.this]
+  }
 }
 
 resource "azurerm_network_security_group" "this" {
