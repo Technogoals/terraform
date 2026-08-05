@@ -1,6 +1,6 @@
 output "resource_group_name" {
   description = "Resource group containing the VM."
-  value       = azurerm_resource_group.this.name
+  value       = data.azurerm_resource_group.this.name
 }
 
 output "public_ip_address" {

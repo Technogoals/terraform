@@ -25,14 +25,8 @@ variable "location" {
   }
 }
 
-variable "resource_group_location" {
-  description = "Metadata location of the resource group. Kept in UK South to avoid replacing the existing group."
-  type        = string
-  default     = "uksouth"
-}
-
 variable "resource_group_name" {
-  description = "Name of the resource group Terraform creates for the VM resources."
+  description = "Name of the pre-created resource group for the VM resources."
   type        = string
   default     = "rg-terraform-vm"
 }

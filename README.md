@@ -27,12 +27,11 @@ this repository or in `terraform.tfvars`. The Azure subscription ID, tenant ID,
 client ID, resource-group name, and SSH **public** key are identifiers rather
 than secrets and can be stored as GitHub environment variables.
 
-Because this configuration creates the deployment resource group, grant the
+The deployment resource group is bootstrapped outside Terraform so the
+deployment identity can use resource-group-scoped permissions. Grant the
 deployment identity only:
 
-- A custom subscription-scope role that permits resource-group creation and
-  management of the resource types in this configuration; if that is not
-  available, `Contributor` at subscription scope
+- `Contributor` on the pre-created `rg-terraform-vm` resource group
 - `Storage Blob Data Contributor` on the Terraform state container
 
 Do not grant `Owner`; role-assignment creation is not required by this project.
@@ -104,7 +103,8 @@ and Terraform's state lock prevents concurrent deployments.
 terraform destroy
 ```
 
-The VM resource group and everything Terraform created inside it are destroyed.
+Terraform removes the VM and network resources it created. The bootstrapped VM
+resource group and the separate state resource group remain in Azure.
 
 ## License
 
