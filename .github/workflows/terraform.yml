@@ -62,7 +62,7 @@ jobs:
       TF_IN_AUTOMATION: "true"
       TF_VAR_subscription_id: cde0b09e-60fb-40de-85fa-f9af8b6dd549
       TF_VAR_location: swedencentral
-      TF_VAR_vm_size: Standard_B1ls
+      TF_VAR_vm_size: Standard_B1s
       TF_VAR_allowed_ssh_cidr: 2.121.53.164/32
       TF_VAR_ssh_public_key_path: ./deployment_key.pub
 
