@@ -11,7 +11,7 @@ variable "subscription_id" {
 variable "location" {
   description = "Policy-approved Azure region in which to create the VM and network resources."
   type        = string
-  default     = "italynorth"
+  default     = "swedencentral"
 
   validation {
     condition = contains([
@@ -40,7 +40,7 @@ variable "vm_name" {
 variable "vm_size" {
   description = "Azure VM SKU."
   type        = string
-  default     = "Standard_B2ats_v2"
+  default     = "Standard_B1ls"
 }
 
 variable "admin_username" {

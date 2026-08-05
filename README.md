@@ -13,10 +13,10 @@ for the VM NIC and limited future platform use.
 
 The subscription policy allows deployments in Italy North, Poland Central,
 Spain Central, Sweden Central, and Switzerland North. The configuration uses
-`italynorth`, where the configured Ubuntu 22.04 image and `Standard_B2ats_v2`
-SKU are both listed. This newer AMD burstable VM has two vCPUs and 1 GiB RAM;
-the subscription has 10 approved Basv2-family cores in this region. Legacy
-B1 SKUs returned live capacity restrictions in several allowed regions.
+`swedencentral` with a `Standard_B1ls` learning VM (one vCPU and 0.5 GiB RAM).
+The subscription has 10 approved BS-family cores there, while its Basv2 quota
+is zero. Sweden Central also has the lowest regular Linux B1ls consumption rate
+among the approved regions at the time of configuration.
 The existing resource group's metadata location remains `uksouth`; Azure permits
 resources inside a resource group to use a different region.
 
