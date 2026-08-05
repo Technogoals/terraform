@@ -85,12 +85,11 @@ Audience: api://AzureADTokenExchange
 Subject:  repo:<owner>/<repository>:environment:azure-production
 ```
 
-Create a protected GitHub environment named `azure-production`, configure
-required reviewers, and add these environment variables:
+Create a protected GitHub environment named `azure-production` and configure
+required reviewers. The non-secret Azure client, tenant, and subscription IDs
+are set directly in the workflow. Add these environment variables for the
+deployment inputs:
 
-- `AZURE_CLIENT_ID`
-- `AZURE_TENANT_ID`
-- `AZURE_SUBSCRIPTION_ID`
 - `AZURE_LOCATION` (currently `italynorth`)
 - `ALLOWED_SSH_CIDR` (your public IP with `/32`)
 - `SSH_PUBLIC_KEY` (the contents of the `.pub` file only)
