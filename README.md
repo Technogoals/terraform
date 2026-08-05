@@ -17,7 +17,8 @@ Spain Central, Sweden Central, and Switzerland North. The configuration uses
 RAM). The subscription-specific Compute SKU API reports this SKU as
 unrestricted, and its Dalsv6 family has a 10-vCPU quota. All smaller legacy B
 sizes are unavailable for this subscription in the approved regions, despite
-the nominal BS-family quota.
+the nominal BS-family quota. The VM uses Canonical's x64 Ubuntu 22.04 Gen2
+image because Dalsv6 supports Hyper-V Generation 2 only.
 The existing resource group's metadata location remains `uksouth`; Azure permits
 resources inside a resource group to use a different region.
 
