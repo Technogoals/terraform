@@ -96,8 +96,10 @@ The identity needs deployment permissions plus `Storage Blob Data Contributor`
 on the state container. Terraform receives `ARM_USE_OIDC=true` and uses the
 GitHub-provided token endpoint to request a short-lived token for this identity.
 Run the workflow manually with `plan`, review it, then run it again with
-`apply`. The `azure-production` environment approval protects both operations,
-and Terraform's state lock prevents concurrent deployments.
+`apply`. To remove Terraform-managed VM and network resources, run it with
+`destroy`; the workflow creates and applies a saved destroy plan. The
+`azure-production` environment approval protects all operations, and
+Terraform's state lock prevents concurrent deployments.
 
 ## Remove the VM resources
 

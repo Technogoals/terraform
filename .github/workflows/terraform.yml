@@ -15,6 +15,7 @@ on:
         options:
           - plan
           - apply
+          - destroy
 
 permissions:
   contents: read
@@ -99,8 +100,14 @@ jobs:
         run: terraform validate
 
       - name: Create saved plan
-        run: terraform plan -input=false -lock-timeout=5m -out=tfplan
+        shell: bash
+        run: |
+          if [[ "${{ inputs.operation }}" == "destroy" ]]; then
+            terraform plan -destroy -input=false -lock-timeout=5m -out=tfplan
+          else
+            terraform plan -input=false -lock-timeout=5m -out=tfplan
+          fi
 
       - name: Apply saved plan
-        if: inputs.operation == 'apply'
+        if: inputs.operation == 'apply' || inputs.operation == 'destroy'
         run: terraform apply -input=false -lock-timeout=5m -auto-approve tfplan
