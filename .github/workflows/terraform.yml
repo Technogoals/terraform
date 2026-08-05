@@ -80,13 +80,17 @@ jobs:
 
       - name: Initialize Azure Storage backend
         run: >-
-          terraform init
+          terraform init -reconfigure
           -backend-config="resource_group_name=SaiTarunRG"
           -backend-config="storage_account_name=saitaruntfcde0b09e"
           -backend-config="container_name=tfstate"
           -backend-config="key=azure-vm/terraform.tfstate"
+          -backend-config="client_id=${ARM_CLIENT_ID}"
+          -backend-config="tenant_id=${ARM_TENANT_ID}"
+          -backend-config="subscription_id=${ARM_SUBSCRIPTION_ID}"
           -backend-config="use_azuread_auth=true"
           -backend-config="use_oidc=true"
+          -backend-config="use_cli=false"
 
       - name: Check formatting
         run: terraform fmt -check -recursive
