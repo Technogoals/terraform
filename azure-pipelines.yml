@@ -1,0 +1,102 @@
+name: terraform-$(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+  branches:
+    include:
+      - main
+
+pr:
+  branches:
+    include:
+      - main
+
+parameters:
+  - name: operation
+    displayName: Terraform operation
+    type: string
+    default: validate
+    values:
+      - validate
+      - plan
+      - apply
+      - destroy
+
+  - name: allowedSshCidr
+    displayName: IPv4 CIDR allowed to use SSH
+    type: string
+    default: 2.121.53.164/32
+
+variables:
+  azureServiceConnection: azure-production-wif
+  azureEnvironment: azure-production
+  terraformVersion: 1.15.6
+  backendResourceGroup: SaiTarunRG
+  backendStorageAccount: saitaruntfcde0b09e
+  backendContainer: tfstate
+  backendKey: azure-vm/terraform.tfstate
+  resourceGroupName: rg-terraform-vm
+  vmName: vm-terraform-linux
+  location: swedencentral
+  vmSize: Standard_D2als_v6
+  sshPublicKey: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMLcczJqh4bKeUgWKwxXCRr8LlWbT/RqVj1a4s1fFrx0 siva@Sivas-MacBook-Pro.local
+
+stages:
+  - stage: Validate
+    displayName: Validate Terraform
+    jobs:
+      - job: Validate
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+
+          - template: azure-pipelines/templates/terraform-validate.yml
+            parameters:
+              terraformVersion: $(terraformVersion)
+
+  - stage: Plan
+    displayName: Terraform plan
+    dependsOn: Validate
+    condition: and(succeeded(), eq('${{ parameters.operation }}', 'plan'))
+    jobs:
+      - job: Plan
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+
+          - template: azure-pipelines/templates/terraform-change.yml
+            parameters:
+              operation: plan
+              allowedSshCidr: ${{ parameters.allowedSshCidr }}
+
+  - stage: Change
+    displayName: Terraform ${{ parameters.operation }}
+    dependsOn: Validate
+    condition: |
+      and(
+        succeeded(),
+        or(
+          eq('${{ parameters.operation }}', 'apply'),
+          eq('${{ parameters.operation }}', 'destroy')
+        )
+      )
+    jobs:
+      - deployment: TerraformChange
+        displayName: Terraform ${{ parameters.operation }}
+        environment: $(azureEnvironment)
+        pool:
+          vmImage: ubuntu-latest
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+
+                - template: azure-pipelines/templates/terraform-change.yml
+                  parameters:
+                    operation: ${{ parameters.operation }}
+                    allowedSshCidr: ${{ parameters.allowedSshCidr }}
+
+                - ${{ if eq(parameters.operation, 'apply') }}:
+                    - template: azure-pipelines/templates/deploy-monitoring.yml

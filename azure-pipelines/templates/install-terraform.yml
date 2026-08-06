@@ -1,0 +1,16 @@
+parameters:
+  - name: terraformVersion
+    type: string
+    default: 1.15.6
+
+steps:
+  - bash: |
+      set -euo pipefail
+      terraform_directory="$(Agent.TempDirectory)/terraform-${{ parameters.terraformVersion }}"
+      mkdir -p "$terraform_directory"
+      curl --fail --silent --show-error --location \
+        "https://releases.hashicorp.com/terraform/${{ parameters.terraformVersion }}/terraform_${{ parameters.terraformVersion }}_linux_amd64.zip" \
+        --output "$(Agent.TempDirectory)/terraform.zip"
+      unzip -o "$(Agent.TempDirectory)/terraform.zip" -d "$terraform_directory"
+      echo "##vso[task.prependpath]$terraform_directory"
+    displayName: Install Terraform ${{ parameters.terraformVersion }}

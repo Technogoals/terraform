@@ -1,0 +1,16 @@
+parameters:
+  - name: terraformVersion
+    type: string
+    default: 1.15.6
+
+steps:
+  - template: install-terraform.yml
+    parameters:
+      terraformVersion: ${{ parameters.terraformVersion }}
+
+  - bash: |
+      set -euo pipefail
+      terraform init -backend=false -input=false
+      terraform fmt -check -recursive
+      terraform validate
+    displayName: Format and validate

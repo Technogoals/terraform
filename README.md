@@ -151,6 +151,32 @@ instances. Docker volumes reside on the VM OS disk, so destroying the VM still
 deletes dashboards, metrics, and locally generated passwords. Cloudflare DNS
 must be updated if Azure assigns a different public IP.
 
+## Azure DevOps Pipelines
+
+The repository includes native Azure Pipelines as a migration path from GitHub
+Actions:
+
+- `azure-pipelines.yml` validates Terraform and provides manual `plan`, `apply`,
+  and `destroy` operations. A successful `apply` automatically deploys the
+  monitoring Compose stack.
+- `azure-pipelines-monitoring.yml` deploys only Nginx, Grafana, and Prometheus
+  when monitoring files change or when started manually.
+
+Create an Azure DevOps project and connect this GitHub repository when creating
+each YAML pipeline. Select the corresponding YAML path above. Create an Azure
+Resource Manager service connection named `azure-production-wif` using workload
+identity federation; do not use a client secret. Grant its identity:
+
+- `Contributor` on the `rg-terraform-vm` resource group
+- `Storage Blob Data Contributor` on the Terraform state container
+
+Create an Azure DevOps environment named `azure-production` and add an approval
+check if desired. Review the variables near the top of both pipeline files,
+especially the SSH CIDR, backend names, region, VM size, and service-connection
+name. Run `validate`, then `plan`, and finally `apply`. After both Azure DevOps
+pipelines are proven, disable the GitHub Actions workflows to avoid duplicate
+deployments.
+
 ## License
 
 No license has been selected yet.

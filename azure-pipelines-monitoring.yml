@@ -1,0 +1,38 @@
+name: monitoring-$(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - nginx/*
+      - nginx/**
+      - .github/scripts/deploy-nginx.sh
+      - azure-pipelines-monitoring.yml
+      - azure-pipelines/templates/deploy-monitoring.yml
+
+pr: none
+
+variables:
+  azureServiceConnection: azure-production-wif
+  azureEnvironment: azure-production
+  resourceGroupName: rg-terraform-vm
+  vmName: vm-terraform-linux
+
+stages:
+  - stage: Deploy
+    displayName: Deploy monitoring stack
+    jobs:
+      - deployment: DeployMonitoring
+        displayName: Deploy Docker Compose stack
+        environment: $(azureEnvironment)
+        pool:
+          vmImage: ubuntu-latest
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+
+                - template: azure-pipelines/templates/deploy-monitoring.yml

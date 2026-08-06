@@ -1,0 +1,31 @@
+steps:
+  - task: AzureCLI@2
+    displayName: Deploy Docker Compose monitoring stack
+    inputs:
+      azureSubscription: $(azureServiceConnection)
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        set -euo pipefail
+
+        archive="$(tar -czf - -C nginx compose.yaml conf.d grafana prometheus | base64 -w 0)"
+        az vm run-command invoke \
+          --resource-group '$(resourceGroupName)' \
+          --name '$(vmName)' \
+          --command-id RunShellScript \
+          --scripts @.github/scripts/deploy-nginx.sh \
+          --parameters "NGINX_ARCHIVE=$archive" \
+          --output json > run-command-result.json
+
+        jq -r '.value[] | select(.message != "") | .message' run-command-result.json
+        jq -e 'all(.value[]; .code | endswith("/succeeded"))' run-command-result.json
+
+        vm_ip="$(az vm show \
+          --resource-group '$(resourceGroupName)' \
+          --name '$(vmName)' \
+          --show-details \
+          --query publicIps \
+          --output tsv)"
+        test -n "$vm_ip"
+        curl --fail --show-error --retry 6 --retry-delay 10 \
+          "http://${vm_ip}/healthz"

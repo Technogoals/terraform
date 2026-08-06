@@ -1,0 +1,59 @@
+parameters:
+  - name: operation
+    type: string
+    values:
+      - plan
+      - apply
+      - destroy
+
+  - name: allowedSshCidr
+    type: string
+
+steps:
+  - template: install-terraform.yml
+    parameters:
+      terraformVersion: $(terraformVersion)
+
+  - task: AzureCLI@2
+    displayName: Terraform ${{ parameters.operation }}
+    inputs:
+      azureSubscription: $(azureServiceConnection)
+      scriptType: bash
+      scriptLocation: inlineScript
+      addSpnToEnvironment: true
+      inlineScript: |
+        set -euo pipefail
+
+        printf '%s\n' '$(sshPublicKey)' > deployment_key.pub
+
+        export ARM_SUBSCRIPTION_ID="$(az account show --query id --output tsv)"
+        export ARM_USE_AZUREAD=true
+        export ARM_USE_CLI=true
+        export TF_IN_AUTOMATION=true
+        export TF_VAR_subscription_id="$ARM_SUBSCRIPTION_ID"
+        export TF_VAR_location='$(location)'
+        export TF_VAR_vm_size='$(vmSize)'
+        export TF_VAR_allowed_ssh_cidr='${{ parameters.allowedSshCidr }}'
+        export TF_VAR_ssh_public_key_path=./deployment_key.pub
+
+        terraform init -reconfigure -input=false \
+          -backend-config='resource_group_name=$(backendResourceGroup)' \
+          -backend-config='storage_account_name=$(backendStorageAccount)' \
+          -backend-config='container_name=$(backendContainer)' \
+          -backend-config='key=$(backendKey)' \
+          -backend-config="subscription_id=$ARM_SUBSCRIPTION_ID" \
+          -backend-config='use_azuread_auth=true' \
+          -backend-config='use_cli=true'
+
+        terraform fmt -check -recursive
+        terraform validate
+
+        if [[ '${{ parameters.operation }}' == destroy ]]; then
+          terraform plan -destroy -input=false -lock-timeout=5m -out=tfplan
+          terraform apply -input=false -lock-timeout=5m -auto-approve tfplan
+        else
+          terraform plan -input=false -lock-timeout=5m -out=tfplan
+          if [[ '${{ parameters.operation }}' == apply ]]; then
+            terraform apply -input=false -lock-timeout=5m -auto-approve tfplan
+          fi
+        fi
