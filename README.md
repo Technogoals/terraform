@@ -138,6 +138,19 @@ ssh azureuser@20.91.249.174 \
   'sudo sed -n "s/^GRAFANA_ADMIN_PASSWORD=/Grafana admin: /p; s/^PROMETHEUS_PASSWORD=/Prometheus admin: /p" /opt/aiinc/nginx/.env'
 ```
 
+## Automated rebuild
+
+Terraform installs Docker Engine, Buildx, and the Docker Compose plugin through
+an idempotent Azure VM extension. After a manual Terraform `apply`, the workflow
+automatically calls the monitoring deployment workflow, which installs the
+Nginx, Grafana, and Prometheus Compose stack and discovers the VM's current
+public IP for verification.
+
+After a Terraform `destroy` followed by `apply`, the services return as fresh
+instances. Docker volumes reside on the VM OS disk, so destroying the VM still
+deletes dashboards, metrics, and locally generated passwords. Cloudflare DNS
+must be updated if Azure assigns a different public IP.
+
 ## License
 
 No license has been selected yet.
