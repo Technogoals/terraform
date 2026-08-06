@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ $# -ne 1 || -z "$1" ]]; then
-  echo "Usage: deploy-nginx.sh <base64-deployment-archive>" >&2
+if [[ -z "${NGINX_ARCHIVE:-}" ]]; then
+  echo "NGINX_ARCHIVE is required" >&2
   exit 2
 fi
 
 deployment_directory=/opt/aiinc/nginx
 install -d -m 0755 "$deployment_directory"
-printf '%s' "$1" | base64 --decode | tar -xz -C "$deployment_directory"
+printf '%s' "$NGINX_ARCHIVE" | base64 --decode | tar -xz -C "$deployment_directory"
 
 cd "$deployment_directory"
 docker compose config --quiet
