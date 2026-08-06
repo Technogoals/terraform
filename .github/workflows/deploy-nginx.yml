@@ -1,4 +1,4 @@
-name: Deploy Nginx container
+name: Deploy monitoring containers
 
 on:
   workflow_dispatch:
@@ -15,7 +15,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: nginx-azure-vm
+  group: monitoring-azure-vm
   cancel-in-progress: false
 
 jobs:
@@ -41,13 +41,13 @@ jobs:
           tenant-id: ${{ env.AZURE_TENANT_ID }}
           subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Package Nginx configuration
+      - name: Package monitoring configuration
         shell: bash
         run: |
-          archive="$(tar -czf - -C nginx compose.yaml conf.d | base64 -w 0)"
+          archive="$(tar -czf - -C nginx compose.yaml conf.d grafana prometheus | base64 -w 0)"
           echo "NGINX_ARCHIVE=$archive" >> "$GITHUB_ENV"
 
-      - name: Deploy Nginx to the VM
+      - name: Deploy monitoring stack to the VM
         shell: bash
         run: |
           az vm run-command invoke \

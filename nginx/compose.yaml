@@ -7,9 +7,46 @@ services:
       - "80:80"
     volumes:
       - ./conf.d:/etc/nginx/conf.d:ro
+      - ./prometheus.htpasswd:/etc/nginx/prometheus.htpasswd:ro
+    depends_on:
+      - grafana
+      - prometheus
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1/healthz"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 5s
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: aiinc-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD is required}
+      GF_SERVER_DOMAIN: aiinc.uk
+      GF_SERVER_ROOT_URL: https://aiinc.uk/grafana/
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: aiinc-prometheus
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=15d
+      - --web.external-url=https://aiinc.uk/prometheus/
+      - --web.route-prefix=/prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+
+volumes:
+  grafana-data:
+  prometheus-data:
