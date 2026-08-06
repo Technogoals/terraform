@@ -125,6 +125,19 @@ its federated credential to already exist. The deployment identity must have a
 role containing `Microsoft.Compute/virtualMachines/runCommands/write`, such as
 Virtual Machine Contributor, on the VM resource group.
 
+The Compose stack also runs Grafana and Prometheus behind Nginx. Their data is
+stored in named Docker volumes. Grafana is available at `/grafana/`, and
+Prometheus is available at `/prometheus/` with Nginx basic authentication.
+Grafana is provisioned with Prometheus as its default data source.
+
+Initial passwords are generated on the VM and never pass through GitHub. Retrieve
+them after the first deployment with:
+
+```bash
+ssh azureuser@20.91.249.174 \
+  'sudo sed -n "s/^GRAFANA_ADMIN_PASSWORD=/Grafana admin: /p; s/^PROMETHEUS_PASSWORD=/Prometheus admin: /p" /opt/aiinc/nginx/.env'
+```
+
 ## License
 
 No license has been selected yet.
