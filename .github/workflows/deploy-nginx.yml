@@ -1,0 +1,78 @@
+name: Deploy Nginx container
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - nginx/**
+      - .github/scripts/deploy-nginx.sh
+      - .github/workflows/deploy-nginx.yml
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: nginx-azure-vm
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: azure-production
+    env:
+      AZURE_CLIENT_ID: c81c9b39-80e2-4a59-ad14-06d824499230
+      AZURE_TENANT_ID: 8b9be59e-0342-4505-8432-2777ffdee5f4
+      AZURE_SUBSCRIPTION_ID: cde0b09e-60fb-40de-85fa-f9af8b6dd549
+      AZURE_RESOURCE_GROUP: rg-terraform-vm
+      AZURE_VM_NAME: vm-terraform-linux
+      AZURE_CORE_OUTPUT: none
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Sign in to Azure with OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ env.AZURE_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Package Nginx configuration
+        shell: bash
+        run: |
+          archive="$(tar -czf - -C nginx compose.yaml conf.d | base64 -w 0)"
+          echo "NGINX_ARCHIVE=$archive" >> "$GITHUB_ENV"
+
+      - name: Allow HTTP through the VM firewall
+        run: |
+          az network nsg rule create \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --nsg-name "${AZURE_VM_NAME}-nsg" \
+            --name AllowHTTP \
+            --priority 110 \
+            --access Allow \
+            --direction Inbound \
+            --protocol Tcp \
+            --source-address-prefixes '*' \
+            --source-port-ranges '*' \
+            --destination-address-prefixes '*' \
+            --destination-port-ranges 80
+
+      - name: Deploy Nginx to the VM
+        shell: bash
+        run: |
+          az vm run-command invoke \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --name "$AZURE_VM_NAME" \
+            --command-id RunShellScript \
+            --scripts @.github/scripts/deploy-nginx.sh \
+            --parameters "$NGINX_ARCHIVE"
+
+      - name: Verify public endpoint
+        env:
+          VM_IP: 20.91.249.174
+        run: curl --fail --show-error --retry 6 --retry-delay 10 "http://${VM_IP}/healthz"

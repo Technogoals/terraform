@@ -112,6 +112,22 @@ terraform destroy
 
 The VM resource group and everything Terraform created inside it are destroyed.
 
+## Nginx container deployment
+
+The `Deploy Nginx container` GitHub Actions workflow packages the files under
+`nginx/` and deploys them to `/opt/aiinc/nginx` on the VM. It authenticates to
+Azure with the repository's existing OIDC identity and uses Azure VM Run
+Command, so no private SSH key is stored in GitHub.
+
+The workflow creates the matching port 80 NSG rule before deployment. It runs
+when its deployment files change on `main`, or it can be started manually from
+the Actions tab. The same rule is declared in Terraform to prevent drift.
+
+The workflow expects the protected `azure-production` GitHub environment and
+its federated credential to already exist. The deployment identity must have a
+role containing `Microsoft.Compute/virtualMachines/runCommands/write`, such as
+Virtual Machine Contributor, on the VM resource group.
+
 ## License
 
 No license has been selected yet.
