@@ -117,9 +117,8 @@ The `Deploy Nginx container` GitHub Actions workflow packages the files under
 Azure with the repository's existing OIDC identity and uses Azure VM Run
 Command, so no private SSH key is stored in GitHub.
 
-The workflow creates the matching port 80 NSG rule before deployment. It runs
-when its deployment files change on `main`, or it can be started manually from
-the Actions tab. The same rule is declared in Terraform to prevent drift.
+Terraform owns the port 80 NSG rule. The deployment workflow runs when its
+files change on `main`, or it can be started manually from the Actions tab.
 
 The workflow expects the protected `azure-production` GitHub environment and
 its federated credential to already exist. The deployment identity must have a

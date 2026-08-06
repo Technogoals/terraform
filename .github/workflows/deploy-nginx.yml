@@ -47,21 +47,6 @@ jobs:
           archive="$(tar -czf - -C nginx compose.yaml conf.d | base64 -w 0)"
           echo "NGINX_ARCHIVE=$archive" >> "$GITHUB_ENV"
 
-      - name: Allow HTTP through the VM firewall
-        run: |
-          az network nsg rule create \
-            --resource-group "$AZURE_RESOURCE_GROUP" \
-            --nsg-name "${AZURE_VM_NAME}-nsg" \
-            --name AllowHTTP \
-            --priority 110 \
-            --access Allow \
-            --direction Inbound \
-            --protocol Tcp \
-            --source-address-prefixes '*' \
-            --source-port-ranges '*' \
-            --destination-address-prefixes '*' \
-            --destination-port-ranges 80
-
       - name: Deploy Nginx to the VM
         shell: bash
         run: |
