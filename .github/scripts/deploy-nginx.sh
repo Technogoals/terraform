@@ -6,6 +6,11 @@ if [[ -z "${NGINX_ARCHIVE:-}" ]]; then
   exit 2
 fi
 
+if ! command -v docker >/dev/null 2>&1 || ! docker compose version >/dev/null 2>&1; then
+  echo "Docker Engine and the Compose plugin must be installed before deployment" >&2
+  exit 2
+fi
+
 deployment_directory=/opt/aiinc/nginx
 install -d -m 0755 "$deployment_directory"
 printf '%s' "$NGINX_ARCHIVE" | base64 --decode | tar -xz -C "$deployment_directory"

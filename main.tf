@@ -109,3 +109,18 @@ resource "azurerm_linux_virtual_machine" "this" {
 
   boot_diagnostics {}
 }
+
+resource "azurerm_virtual_machine_extension" "docker" {
+  name                       = "install-docker"
+  virtual_machine_id         = azurerm_linux_virtual_machine.this.id
+  publisher                  = "Microsoft.Azure.Extensions"
+  type                       = "CustomScript"
+  type_handler_version       = "2.1"
+  auto_upgrade_minor_version = true
+
+  settings = jsonencode({
+    commandToExecute = "bash -c \"echo '${base64encode(file("${path.module}/scripts/install-docker.sh"))}' | base64 -d | bash\""
+  })
+
+  tags = var.tags
+}

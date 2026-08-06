@@ -1,6 +1,7 @@
 name: Deploy monitoring containers
 
 on:
+  workflow_call:
   workflow_dispatch:
   push:
     branches:
@@ -62,6 +63,14 @@ jobs:
           jq -e 'all(.value[]; .code | endswith("/succeeded"))' run-command-result.json
 
       - name: Verify public endpoint
-        env:
-          VM_IP: 20.91.249.174
-        run: curl --fail --show-error --retry 6 --retry-delay 10 "http://${VM_IP}/healthz"
+        shell: bash
+        run: |
+          vm_ip="$(az vm show \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --name "$AZURE_VM_NAME" \
+            --show-details \
+            --query publicIps \
+            --output tsv)"
+          test -n "$vm_ip"
+          curl --fail --show-error --retry 6 --retry-delay 10 \
+            "http://${vm_ip}/healthz"
