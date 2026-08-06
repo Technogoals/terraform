@@ -38,6 +38,18 @@ resource "azurerm_network_security_group" "this" {
     source_address_prefix      = var.allowed_ssh_cidr
     destination_address_prefix = "*"
   }
+
+  security_rule {
+    name                       = "AllowHTTP"
+    priority                   = 110
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "80"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
 }
 
 resource "azurerm_public_ip" "this" {
