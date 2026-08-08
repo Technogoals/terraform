@@ -61,6 +61,7 @@ fi
 
 printf 'admin:%s\n' "$(openssl passwd -apr1 "$PROMETHEUS_PASSWORD")" \
   > prometheus.htpasswd
+chmod 0644 prometheus.htpasswd
 
 docker compose config --quiet
 docker compose pull
