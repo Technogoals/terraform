@@ -45,7 +45,7 @@ jobs:
       - name: Package monitoring configuration
         shell: bash
         run: |
-          archive="$(tar -czf - -C nginx compose.yaml conf.d grafana prometheus | base64 -w 0)"
+          archive="$(tar -czf - -C nginx compose.yaml conf.d grafana html prometheus | base64 -w 0)"
           echo "NGINX_ARCHIVE=$archive" >> "$GITHUB_ENV"
 
       - name: Deploy monitoring stack to the VM

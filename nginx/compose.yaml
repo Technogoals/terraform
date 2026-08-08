@@ -7,6 +7,7 @@ services:
       - "80:80"
     volumes:
       - ./conf.d:/etc/nginx/conf.d:ro
+      - ./html:/usr/share/nginx/html:ro
       - ./prometheus.htpasswd:/etc/nginx/prometheus.htpasswd:ro
     depends_on:
       - grafana
