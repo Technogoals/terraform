@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ -z "${NGINX_ARCHIVE:-}" ]]; then
-  echo "NGINX_ARCHIVE is required" >&2
+if [[ -z "${SOURCE_ARCHIVE_URL:-}" && -z "${NGINX_ARCHIVE:-}" ]]; then
+  echo "SOURCE_ARCHIVE_URL or NGINX_ARCHIVE is required" >&2
   exit 2
 fi
 
@@ -13,7 +13,31 @@ fi
 
 deployment_directory=/opt/aiinc/nginx
 install -d -m 0755 "$deployment_directory"
-printf '%s' "$NGINX_ARCHIVE" | base64 --decode | tar -xz -C "$deployment_directory"
+
+if [[ -n "${SOURCE_ARCHIVE_URL:-}" ]]; then
+  case "$SOURCE_ARCHIVE_URL" in
+    https://github.com/Technogoals/terraform/archive/*.tar.gz) ;;
+    *)
+      echo "SOURCE_ARCHIVE_URL is not an approved repository archive" >&2
+      exit 2
+      ;;
+  esac
+
+  source_archive="$(mktemp)"
+  trap 'rm -f "$source_archive"' EXIT
+  curl --fail --silent --show-error --location \
+    "$SOURCE_ARCHIVE_URL" --output "$source_archive"
+  archive_root="$(tar -tzf "$source_archive" | sed -n '1p')"
+  if [[ ! "$archive_root" =~ ^terraform-[0-9a-f]+/$ ]]; then
+    echo "The repository archive has an unexpected root directory" >&2
+    exit 2
+  fi
+  tar -xzf "$source_archive" --strip-components=2 \
+    -C "$deployment_directory" "${archive_root}nginx"
+else
+  printf '%s' "$NGINX_ARCHIVE" | base64 --decode \
+    | tar -xz -C "$deployment_directory"
+fi
 
 cd "$deployment_directory"
 

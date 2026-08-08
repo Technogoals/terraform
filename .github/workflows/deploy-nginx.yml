@@ -42,21 +42,16 @@ jobs:
           tenant-id: ${{ env.AZURE_TENANT_ID }}
           subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Package monitoring configuration
-        shell: bash
-        run: |
-          archive="$(tar -czf - -C nginx compose.yaml conf.d grafana html prometheus | base64 -w 0)"
-          echo "NGINX_ARCHIVE=$archive" >> "$GITHUB_ENV"
-
       - name: Deploy monitoring stack to the VM
         shell: bash
         run: |
+          source_archive_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/archive/${GITHUB_SHA}.tar.gz"
           az vm run-command invoke \
             --resource-group "$AZURE_RESOURCE_GROUP" \
             --name "$AZURE_VM_NAME" \
             --command-id RunShellScript \
             --scripts @.github/scripts/deploy-nginx.sh \
-            --parameters "NGINX_ARCHIVE=$NGINX_ARCHIVE" \
+            --parameters "SOURCE_ARCHIVE_URL=$source_archive_url" \
             --output json > run-command-result.json
 
           jq -r '.value[] | select(.message != "") | .message' run-command-result.json
