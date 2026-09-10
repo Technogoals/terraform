@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101b17"><title>Snake — AIINC Arcade</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+<header><a href="../">AIINC <span>ARCADE</span></a><span class="edition">001 / SNAKE</span></header>
+<section class="intro"><p class="eyebrow">A LITTLE BREAK. A NEW HIGH SCORE.</p><h1>One more bite<span>.</span></h1><p>The classic Snake game. Eat, grow, and stay out of your own way.</p></section>
+<section class="game" aria-label="Snake game">
+<div class="toolbar"><div><span class="label">SCORE</span><strong id="score">0</strong></div><div><span class="label">PERSONAL BEST</span><strong id="best">0</strong></div><label class="speed">PACE<select id="pace"><option value="160">Easy</option><option value="110" selected>Normal</option><option value="75">Fast</option></select></label></div>
+<div class="board-wrap"><canvas id="board" width="600" height="600" tabindex="0" aria-label="Snake board. Use arrow keys or WASD to steer, Space to pause."></canvas><div id="overlay"><p id="message">Ready when you are.</p><span id="hint">A small snake. A big appetite.</span><button id="start">Let's play ↗</button></div></div>
+<div class="footer"><p id="status" role="status" aria-live="polite">Choose your pace and start a game.</p><button id="pause" disabled>Pause</button></div>
+</section>
+<div class="controls" aria-label="Direction controls"><button data-dir="up" aria-label="Move up">↑</button><div><button data-dir="left" aria-label="Move left">←</button><button data-dir="down" aria-label="Move down">↓</button><button data-dir="right" aria-label="Move right">→</button></div></div>
+<p class="instructions">Arrow keys or WASD to steer · Space to pause<br>On mobile, swipe the board or use the arrows.</p>
+<footer>BUILT FOR A QUICK BREAK <span>NO DOWNLOADS. JUST PLAY.</span></footer>
+</main><script src="game.js" defer></script>
+</body></html>

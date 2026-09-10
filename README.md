@@ -4,6 +4,20 @@ The static homepage in `nginx/html/` is deployed by `.github/workflows/pages.yml
 It needs no Azure VM or Docker container. Pushes to `main` that change the site
 or its Pages workflow publish the site after the one-time setup below.
 
+## Develop the Snake game locally
+
+Run `docker compose -f compose.snake.yaml up -d` and open
+http://localhost:8080/snake/. Edit the files in `nginx/html/snake/` and refresh
+the browser to see changes. Stop with `docker compose -f compose.snake.yaml down`.
+Docker only serves the static site locally; no Azure resources are needed.
+
+Use arrow keys, WASD, swipes, or the on-screen arrows. Space pauses the game.
+Choose a pace before each round. Personal best is stored in the browser when
+local storage is available. Switching tabs automatically pauses the game.
+
+Once committed and pushed to `main`, the existing Pages workflow publishes the
+same static game at https://aiinc.uk/snake/.
+
 ## Finish the hosting migration
 
 1. Merge the Pages changes into `main`.

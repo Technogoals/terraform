@@ -26,9 +26,41 @@
       object-fit: contain;
       object-position: center;
     }
+
+    .navigation {
+      position: fixed;
+      top: max(24px, env(safe-area-inset-top));
+      right: max(24px, env(safe-area-inset-right));
+    }
+
+    .games-link {
+      display: inline-flex;
+      align-items: center;
+      min-height: 48px;
+      padding: 12px 26px;
+      border: 1px solid #ff76cb;
+      border-radius: 12px;
+      background: #160f2eee;
+      color: #fff;
+      font: 700 16px/1.4 system-ui, sans-serif;
+      text-decoration: none;
+      box-shadow: 0 0 24px #ff38ae44;
+    }
+
+    .games-link:hover {
+      background: #572047;
+    }
+
+    .games-link:focus-visible {
+      outline: 3px solid #70efff;
+      outline-offset: 5px;
+    }
   </style>
 </head>
 <body>
   <img class="hero" src="./homepage.jpeg" alt="Neon-lit arcade with game cabinets and a Game Over sign">
+  <nav class="navigation" aria-label="Main navigation">
+    <a class="games-link" href="./snake/">Games <span aria-hidden="true">&nbsp;↗</span></a>
+  </nav>
 </body>
 </html>
