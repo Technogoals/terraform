@@ -3,13 +3,6 @@ name: Deploy monitoring containers
 on:
   workflow_call:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - nginx/**
-      - .github/scripts/deploy-nginx.sh
-      - .github/workflows/deploy-nginx.yml
 
 permissions:
   contents: read

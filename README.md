@@ -1,4 +1,39 @@
-# Secure Azure Linux VM with Terraform
+# aiinc.uk website on GitHub Pages
+
+The static homepage in `nginx/html/` is deployed by `.github/workflows/pages.yml`.
+It needs no Azure VM or Docker container. Pushes to `main` that change the site
+or its Pages workflow publish the site after the one-time setup below.
+
+## Finish the hosting migration
+
+1. Merge the Pages changes into `main`.
+2. In the repository Settings → Pages, select **GitHub Actions** as the source.
+3. Run **Deploy website to GitHub Pages** from Actions and verify the deployment.
+4. In Settings → Pages, set the custom domain to `aiinc.uk` before changing DNS.
+5. In Cloudflare DNS, replace the Azure-directed apex A record with these four
+   A records (name `@`): `185.199.108.153`, `185.199.109.153`,
+   `185.199.110.153`, and `185.199.111.153`. Set `www` to a CNAME pointing to
+   `technogoals.github.io`. Remove conflicting website A/AAAA/CNAME records;
+   preserve unrelated records such as mail and domain verification records.
+   Use DNS-only records for direct GitHub Pages hosting.
+6. Once GitHub's DNS check and certificate provisioning finish, enable
+   **Enforce HTTPS** in Settings → Pages and verify `https://aiinc.uk`.
+
+Reference: https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site
+
+GitHub Pages serves static files. Grafana, Prometheus, and the terminal Docker
+Snake game are not hosted by this workflow. A browser Snake game could be added
+as static HTML, CSS, and JavaScript.
+
+Automatic Azure website deployment is disconnected: the legacy monitoring
+workflow is manual/reusable only, and Terraform apply no longer invokes it.
+Existing Azure resources are not deleted by this migration and may still incur
+charges. Retire them separately after checking for data you want to preserve.
+
+## Legacy Azure infrastructure
+
+The following sections describe the retained Azure setup, not the Pages host.
+
 
 This project creates an Azure resource group and deploys an Ubuntu 22.04 LTS VM
 and its network resources into it. Authentication is passwordless:
@@ -117,8 +152,7 @@ The `Deploy Nginx container` GitHub Actions workflow packages the files under
 Azure with the repository's existing OIDC identity and uses Azure VM Run
 Command, so no private SSH key is stored in GitHub.
 
-Terraform owns the port 80 NSG rule. The deployment workflow runs when its
-files change on `main`, or it can be started manually from the Actions tab.
+Terraform owns the port 80 NSG rule. The legacy deployment workflow can be started manually from the Actions tab.
 
 The workflow expects the protected `azure-production` GitHub environment and
 its federated credential to already exist. The deployment identity must have a
@@ -141,13 +175,12 @@ ssh azureuser@20.91.249.174 \
 ## Automated rebuild
 
 Terraform installs Docker Engine, Buildx, and the Docker Compose plugin through
-an idempotent Azure VM extension. After a manual Terraform `apply`, the workflow
-automatically calls the monitoring deployment workflow, which installs the
-Nginx, Grafana, and Prometheus Compose stack and discovers the VM's current
-public IP for verification.
+an idempotent Azure VM extension. The legacy monitoring deployment workflow can be run manually to install the
+Nginx, Grafana, and Prometheus Compose stack on Azure. Terraform apply no longer
+starts it automatically.
 
-After a Terraform `destroy` followed by `apply`, the services return as fresh
-instances. Docker volumes reside on the VM OS disk, so destroying the VM still
+After a Terraform `destroy` followed by `apply` and a manual monitoring
+deployment, the services return as fresh instances. Docker volumes reside on the VM OS disk, so destroying the VM still
 deletes dashboards, metrics, and locally generated passwords. Cloudflare DNS
 must be updated if Azure assigns a different public IP.
 
